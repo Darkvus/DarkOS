@@ -63,7 +63,7 @@ jobs:
       - name: Compress RPi image
         run: |
           cd build
-          sudo xz -9 -T0 darkOS-1.0-rpi.img
+          sudo xz -2 -T0 darkOS-1.0-rpi.img
           sudo sha256sum darkOS-1.0-rpi.img.xz > darkOS-1.0-rpi.img.xz.sha256
           sudo chmod 644 *.xz *.sha256
 
@@ -96,8 +96,8 @@ jobs:
         run: |
           sudo ls -la build/
           cd build
-          sudo xz -9 -T0 darkOS-1.0-vm.ova
-          sudo xz -9 -T0 darkOS-1.0-vm.vmdk
+          sudo xz -2 -T0 darkOS-1.0-vm.ova
+          sudo xz -2 -T0 darkOS-1.0-vm.vmdk
           sudo sha256sum darkOS-1.0-vm.ova.xz > darkOS-1.0-vm.ova.xz.sha256
           sudo sha256sum darkOS-1.0-vm.vmdk.xz > darkOS-1.0-vm.vmdk.xz.sha256
           sudo chmod 644 *.xz *.sha256
@@ -144,7 +144,7 @@ jobs:
         run: |
           cat artifacts/pc/darkOS-1.0-pc.iso.part-* > artifacts/darkOS-1.0-pc.iso
           cp artifacts/pc/darkOS-1.0-pc.iso.sha256 artifacts/
-          xz -9 -T0 artifacts/darkOS-1.0-pc.iso
+          xz -2 -T0 artifacts/darkOS-1.0-pc.iso
           sha256sum artifacts/darkOS-1.0-pc.iso.xz > artifacts/darkOS-1.0-pc.iso.xz.sha256
 
       - name: Prepare release files
