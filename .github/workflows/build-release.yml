@@ -26,15 +26,6 @@ jobs:
             xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring \
             isolinux syslinux-common zstd
 
-      - name: Setup isolinux paths
-        run: |
-          sudo mkdir -p /root/isolinux
-          sudo cp /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/
-          sudo cp /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/
-          sudo cp /usr/lib/syslinux/modules/bios/ldlinux.c32 /root/isolinux/
-          sudo cp /usr/lib/syslinux/modules/bios/libcom32.c32 /root/isolinux/
-          sudo cp /usr/lib/syslinux/modules/bios/libutil.c32 /root/isolinux/
-
       - name: Build PC ISO
         run: sudo ./scripts/build-pc.sh
 

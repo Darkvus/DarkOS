@@ -73,6 +73,14 @@ if [[ -d "${DARKOS_ROOT}/overlays" ]]; then
     cp -r "${DARKOS_ROOT}/overlays/"* config/includes.chroot/ 2>/dev/null || true
 fi
 
+# Copiar isolinux files dentro del chroot donde live-build los busca
+mkdir -p config/includes.chroot/root/isolinux
+cp /usr/lib/ISOLINUX/isolinux.bin config/includes.chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/vesamenu.c32 config/includes.chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/ldlinux.c32 config/includes.chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/libcom32.c32 config/includes.chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/libutil.c32 config/includes.chroot/root/isolinux/
+
 # Copiar branding
 mkdir -p config/includes.chroot/usr/share/darkos
 cp -r "${DARKOS_ROOT}/config/darkos-branding/"* config/includes.chroot/usr/share/darkos/ 2>/dev/null || true
