@@ -61,8 +61,9 @@ mkfs.ext4 -q "$BOOT_PART"
 mkfs.ext4 -q "$ROOT_PART"
 
 mount "$ROOT_PART" "$ROOTFS"
-mkdir -p "${ROOTFS}/boot" "${ROOTFS}/boot/efi"
+mkdir -p "${ROOTFS}/boot"
 mount "$BOOT_PART" "${ROOTFS}/boot"
+mkdir -p "${ROOTFS}/boot/efi"
 mount "$EFI_PART" "${ROOTFS}/boot/efi"
 
 # Debootstrap

@@ -34,17 +34,17 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 # Configurar live-build
-# Debug: show lb version and available options
-lb --version || true
-echo "---"
-
 lb config \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
     --debian-installer none \
     --memtest none \
-    --apt-recommends false
+    --apt-recommends false \
+    --mirror-bootstrap "http://deb.debian.org/debian" \
+    --mirror-chroot "http://deb.debian.org/debian" \
+    --mirror-binary "http://deb.debian.org/debian" \
+    --debootstrap-options "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
 
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot

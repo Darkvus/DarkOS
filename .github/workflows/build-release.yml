@@ -23,7 +23,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap dosfstools squashfs-tools \
-            xorriso grub-efi-amd64-bin grub-pc-bin mtools
+            xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring
 
       - name: Build PC ISO
         run: sudo ./scripts/build-pc.sh
@@ -54,7 +54,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y debootstrap qemu-user-static binfmt-support \
-            parted dosfstools e2fsprogs
+            parted dosfstools e2fsprogs debian-archive-keyring
 
       - name: Build RPi image
         run: sudo ./scripts/build-rpi.sh
@@ -85,7 +85,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y debootstrap qemu-utils parted dosfstools \
-            e2fsprogs grub-efi-amd64-bin grub-efi-amd64
+            e2fsprogs grub-efi-amd64-bin grub-efi-amd64-signed debian-archive-keyring
 
       - name: Build VM images
         run: sudo ./scripts/build-vm.sh
