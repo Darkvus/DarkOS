@@ -36,14 +36,17 @@ cd "$BUILD_DIR"
 # Configurar live-build
 lb config \
     --distribution "$DISTRO" \
-    --architectures "$ARCH" \
-    --binary-images iso-hybrid \
+    --architecture "$ARCH" \
+    --binary-image iso-hybrid \
+    --bootloaders grub-efi \
     --debian-installer none \
     --memtest none \
     --iso-application "darkOS" \
     --iso-publisher "darkvus" \
     --iso-volume "darkOS 1.0" \
-    --apt-recommends false
+    --apt-recommends false \
+    --security true \
+    --updates true
 
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot
