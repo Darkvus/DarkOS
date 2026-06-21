@@ -27,7 +27,15 @@ jobs:
             syslinux-utils
 
       - name: Build PC ISO
-        run: sudo ./scripts/build-pc.sh
+        run: |
+          # Wrap isohybrid to not fail on EFI-only ISOs
+          sudo mv /usr/bin/isohybrid /usr/bin/isohybrid.real 2>/dev/null || true
+          sudo tee /usr/bin/isohybrid > /dev/null <<'WRAP'
+          #!/bin/sh
+          /usr/bin/isohybrid.real "$@" 2>/dev/null || true
+          WRAP
+          sudo chmod +x /usr/bin/isohybrid
+          sudo ./scripts/build-pc.sh
 
       - name: Compress ISO
         run: |

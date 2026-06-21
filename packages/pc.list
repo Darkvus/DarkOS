@@ -4,7 +4,6 @@ linux-image-amd64
 live-boot
 systemd-sysv
 grub-efi-amd64
-syslinux-utils
 
 # KDE Plasma Desktop
 kde-plasma-desktop
