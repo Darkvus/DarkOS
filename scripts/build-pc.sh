@@ -34,19 +34,17 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 # Configurar live-build
+# Debug: show lb version and available options
+lb --version || true
+echo "---"
+
 lb config \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
-    --bootloaders grub-efi \
     --debian-installer none \
     --memtest none \
-    --iso-application "darkOS" \
-    --iso-publisher "darkvus" \
-    --iso-volume "darkOS 1.0" \
-    --apt-recommends false \
-    --security true \
-    --updates true
+    --apt-recommends false
 
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot
