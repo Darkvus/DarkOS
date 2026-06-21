@@ -60,13 +60,13 @@ echo "deb http://deb.debian.org/debian-security bookworm-security main contrib n
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot
 
-# Copiar hooks de configuración
-mkdir -p config/hooks/normal
-cp "${DARKOS_ROOT}/scripts/setup-dev.sh" config/hooks/normal/0100-setup-dev.hook.chroot
-cp "${DARKOS_ROOT}/scripts/setup-plasma-mac.sh" config/hooks/normal/0200-setup-plasma.hook.chroot
-cp "${DARKOS_ROOT}/scripts/setup-ollama.sh" config/hooks/normal/0300-setup-ollama.hook.chroot
-cp "${DARKOS_ROOT}/scripts/post-install.sh" config/hooks/normal/0400-post-install.hook.chroot
-chmod +x config/hooks/normal/*.hook.chroot
+# Copiar hooks de configuración (live-build 3.x usa config/hooks/ directamente)
+mkdir -p config/hooks
+cp "${DARKOS_ROOT}/scripts/setup-dev.sh" config/hooks/0100-setup-dev.hook.chroot
+cp "${DARKOS_ROOT}/scripts/setup-plasma-mac.sh" config/hooks/0200-setup-plasma.hook.chroot
+cp "${DARKOS_ROOT}/scripts/setup-ollama.sh" config/hooks/0300-setup-ollama.hook.chroot
+cp "${DARKOS_ROOT}/scripts/post-install.sh" config/hooks/0400-post-install.hook.chroot
+chmod +x config/hooks/*.hook.chroot
 
 # Copiar overlays (archivos que van directo al filesystem)
 if [[ -d "${DARKOS_ROOT}/overlays" ]]; then
@@ -76,7 +76,7 @@ fi
 # Hook que crea /root/isolinux/ con symlinks a los archivos reales
 # Se ejecuta durante la fase chroot, DESPUÉS de instalar paquetes
 # Los archivos persisten cuando live-build copia el chroot para la fase binary
-cat > config/hooks/normal/0500-isolinux-links.hook.chroot <<'HOOK'
+cat > config/hooks/0500-isolinux-links.hook.chroot <<'HOOK'
 #!/bin/sh
 mkdir -p /root/isolinux
 # isolinux package puts files here
@@ -87,7 +87,7 @@ for f in vesamenu.c32 ldlinux.c32 libcom32.c32 libutil.c32 menu.c32; do
 done
 ls -la /root/isolinux/ || true
 HOOK
-chmod +x config/hooks/normal/0500-isolinux-links.hook.chroot
+chmod +x config/hooks/0500-isolinux-links.hook.chroot
 
 # Copiar branding
 mkdir -p config/includes.chroot/usr/share/darkos
