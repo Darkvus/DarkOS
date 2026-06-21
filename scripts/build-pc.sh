@@ -44,7 +44,7 @@ lb config \
     --mirror-bootstrap "http://deb.debian.org/debian" \
     --mirror-chroot "http://deb.debian.org/debian" \
     --mirror-binary "http://deb.debian.org/debian" \
-    --debootstrap-options "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
+    --keyring-packages "debian-archive-keyring"
 
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot
