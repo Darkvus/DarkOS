@@ -23,7 +23,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap dosfstools squashfs-tools \
-            xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring
+            xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring \
+            isolinux syslinux-common
 
       - name: Build PC ISO
         run: sudo ./scripts/build-pc.sh
@@ -62,8 +63,9 @@ jobs:
       - name: Compress RPi image
         run: |
           cd build
-          xz -9 -T0 darkOS-1.0-rpi.img
-          sha256sum darkOS-1.0-rpi.img.xz > darkOS-1.0-rpi.img.xz.sha256
+          sudo xz -9 -T0 darkOS-1.0-rpi.img
+          sudo sha256sum darkOS-1.0-rpi.img.xz > darkOS-1.0-rpi.img.xz.sha256
+          sudo chmod 644 *.xz *.sha256
 
       - name: Upload RPi artifacts
         uses: actions/upload-artifact@v4

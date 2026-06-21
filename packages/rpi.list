@@ -15,7 +15,7 @@ neofetch
 tmux
 build-essential
 openssh-server
-networkmanager
+network-manager
 bluez
 pulseaudio
 
