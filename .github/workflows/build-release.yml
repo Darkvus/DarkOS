@@ -1,0 +1,170 @@
+name: Build & Release darkOS
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-pc:
+    name: Build PC Image (x86_64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap dosfstools squashfs-tools \
+            xorriso grub-efi-amd64-bin grub-pc-bin mtools
+
+      - name: Build PC ISO
+        run: sudo ./scripts/build-pc.sh
+
+      - name: Compress ISO
+        run: |
+          cd build
+          split -b 1900M darkOS-1.0-pc.iso "darkOS-1.0-pc.iso.part-"
+          sha256sum darkOS-1.0-pc.iso > darkOS-1.0-pc.iso.sha256
+
+      - name: Upload PC artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkos-pc
+          path: |
+            build/darkOS-1.0-pc.iso.part-*
+            build/darkOS-1.0-pc.iso.sha256
+          retention-days: 1
+
+  build-rpi:
+    name: Build RPi Image (ARM64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debootstrap qemu-user-static binfmt-support \
+            parted dosfstools e2fsprogs
+
+      - name: Build RPi image
+        run: sudo ./scripts/build-rpi.sh
+
+      - name: Compress RPi image
+        run: |
+          cd build
+          xz -9 -T0 darkOS-1.0-rpi.img
+          sha256sum darkOS-1.0-rpi.img.xz > darkOS-1.0-rpi.img.xz.sha256
+
+      - name: Upload RPi artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkos-rpi
+          path: |
+            build/darkOS-1.0-rpi.img.xz
+            build/darkOS-1.0-rpi.img.xz.sha256
+          retention-days: 1
+
+  release:
+    name: Create GitHub Release
+    needs: [build-pc, build-rpi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download PC artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: darkos-pc
+          path: artifacts/pc
+
+      - name: Download RPi artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: darkos-rpi
+          path: artifacts/rpi
+
+      - name: Reassemble PC ISO
+        run: |
+          cat artifacts/pc/darkOS-1.0-pc.iso.part-* > artifacts/darkOS-1.0-pc.iso
+          cp artifacts/pc/darkOS-1.0-pc.iso.sha256 artifacts/
+          xz -9 -T0 artifacts/darkOS-1.0-pc.iso
+          sha256sum artifacts/darkOS-1.0-pc.iso.xz > artifacts/darkOS-1.0-pc.iso.xz.sha256
+
+      - name: Prepare RPi files
+        run: |
+          cp artifacts/rpi/* artifacts/
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "darkOS ${{ steps.version.outputs.version }}"
+          body: |
+            ## darkOS ${{ steps.version.outputs.version }}
+
+            A developer-first Linux distro with built-in AI.
+
+            ### Downloads
+
+            | Platform | File | Description |
+            |:---|:---|:---|
+            | PC (x86_64) | `darkOS-1.0-pc.iso.xz` | Bootable USB image — decompress with `xz -d`, flash with `dd` or Etcher |
+            | Raspberry Pi 4 | `darkOS-1.0-rpi.img.xz` | SD card image — decompress with `xz -d`, flash with RPi Imager |
+
+            ### Flash instructions
+
+            ```bash
+            # PC
+            xz -d darkOS-1.0-pc.iso.xz
+            sudo dd if=darkOS-1.0-pc.iso of=/dev/sdX bs=4M status=progress
+
+            # Raspberry Pi 4
+            xz -d darkOS-1.0-rpi.img.xz
+            sudo dd if=darkOS-1.0-rpi.img of=/dev/sdX bs=4M status=progress
+            ```
+
+            ### Default credentials
+            - **User:** `darkvus`
+            - **Password:** `darkos`
+
+            ### What's included
+            - KDE Plasma desktop (macOS style) — adapts to available RAM
+            - Ollama with auto-detected AI model
+            - Python 3, VSCode, Chrome, Node.js, Git
+            - SSH enabled by default
+
+            ### Verify downloads
+            ```bash
+            sha256sum -c darkOS-1.0-pc.iso.xz.sha256
+            sha256sum -c darkOS-1.0-rpi.img.xz.sha256
+            ```
+          files: |
+            artifacts/darkOS-1.0-pc.iso.xz
+            artifacts/darkOS-1.0-pc.iso.xz.sha256
+            artifacts/darkOS-1.0-rpi.img.xz
+            artifacts/darkOS-1.0-rpi.img.xz.sha256
+          draft: false
+          prerelease: false
