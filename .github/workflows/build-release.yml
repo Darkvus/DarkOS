@@ -24,7 +24,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap dosfstools squashfs-tools \
             xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring \
-            isolinux syslinux-common
+            isolinux syslinux-common zstd
 
       - name: Build PC ISO
         run: sudo ./scripts/build-pc.sh
@@ -32,16 +32,17 @@ jobs:
       - name: Compress ISO
         run: |
           cd build
-          split -b 1900M darkOS-1.0-pc.iso "darkOS-1.0-pc.iso.part-"
-          sha256sum darkOS-1.0-pc.iso > darkOS-1.0-pc.iso.sha256
+          sudo zstd -T0 --fast darkOS-1.0-pc.iso -o darkOS-1.0-pc.iso.zst
+          sha256sum darkOS-1.0-pc.iso.zst > darkOS-1.0-pc.iso.zst.sha256
+          sudo chmod 644 *.zst *.sha256
 
       - name: Upload PC artifacts
         uses: actions/upload-artifact@v4
         with:
           name: darkos-pc
           path: |
-            build/darkOS-1.0-pc.iso.part-*
-            build/darkOS-1.0-pc.iso.sha256
+            build/darkOS-1.0-pc.iso.zst
+            build/darkOS-1.0-pc.iso.zst.sha256
           retention-days: 1
 
   build-rpi:
@@ -55,7 +56,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y debootstrap qemu-user-static binfmt-support \
-            parted dosfstools e2fsprogs debian-archive-keyring
+            parted dosfstools e2fsprogs debian-archive-keyring zstd
 
       - name: Build RPi image
         run: sudo ./scripts/build-rpi.sh
@@ -63,17 +64,17 @@ jobs:
       - name: Compress RPi image
         run: |
           cd build
-          sudo xz -2 -T0 darkOS-1.0-rpi.img
-          sudo sha256sum darkOS-1.0-rpi.img.xz > darkOS-1.0-rpi.img.xz.sha256
-          sudo chmod 644 *.xz *.sha256
+          sudo zstd -T0 --fast darkOS-1.0-rpi.img -o darkOS-1.0-rpi.img.zst
+          sha256sum darkOS-1.0-rpi.img.zst > darkOS-1.0-rpi.img.zst.sha256
+          sudo chmod 644 *.zst *.sha256
 
       - name: Upload RPi artifacts
         uses: actions/upload-artifact@v4
         with:
           name: darkos-rpi
           path: |
-            build/darkOS-1.0-rpi.img.xz
-            build/darkOS-1.0-rpi.img.xz.sha256
+            build/darkOS-1.0-rpi.img.zst
+            build/darkOS-1.0-rpi.img.zst.sha256
           retention-days: 1
 
   build-vm:
@@ -87,30 +88,29 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y debootstrap qemu-utils parted dosfstools \
-            e2fsprogs grub-efi-amd64-bin grub-efi-amd64-signed debian-archive-keyring
+            e2fsprogs grub-efi-amd64-bin grub-efi-amd64-signed debian-archive-keyring zstd
 
       - name: Build VM images
         run: sudo ./scripts/build-vm.sh
 
       - name: Compress VM images
         run: |
-          sudo ls -la build/
           cd build
-          sudo xz -2 -T0 darkOS-1.0-vm.ova
-          sudo xz -2 -T0 darkOS-1.0-vm.vmdk
-          sudo sha256sum darkOS-1.0-vm.ova.xz > darkOS-1.0-vm.ova.xz.sha256
-          sudo sha256sum darkOS-1.0-vm.vmdk.xz > darkOS-1.0-vm.vmdk.xz.sha256
-          sudo chmod 644 *.xz *.sha256
+          sudo zstd -T0 --fast darkOS-1.0-vm.ova -o darkOS-1.0-vm.ova.zst
+          sudo zstd -T0 --fast darkOS-1.0-vm.vmdk -o darkOS-1.0-vm.vmdk.zst
+          sha256sum darkOS-1.0-vm.ova.zst > darkOS-1.0-vm.ova.zst.sha256
+          sha256sum darkOS-1.0-vm.vmdk.zst > darkOS-1.0-vm.vmdk.zst.sha256
+          sudo chmod 644 *.zst *.sha256
 
       - name: Upload VM artifacts
         uses: actions/upload-artifact@v4
         with:
           name: darkos-vm
           path: |
-            build/darkOS-1.0-vm.ova.xz
-            build/darkOS-1.0-vm.ova.xz.sha256
-            build/darkOS-1.0-vm.vmdk.xz
-            build/darkOS-1.0-vm.vmdk.xz.sha256
+            build/darkOS-1.0-vm.ova.zst
+            build/darkOS-1.0-vm.ova.zst.sha256
+            build/darkOS-1.0-vm.vmdk.zst
+            build/darkOS-1.0-vm.vmdk.zst.sha256
           retention-days: 1
 
   release:
@@ -122,35 +122,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download PC artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: darkos-pc
-          path: artifacts/pc
-
-      - name: Download RPi artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: darkos-rpi
-          path: artifacts/rpi
-
-      - name: Download VM artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: darkos-vm
-          path: artifacts/vm
-
-      - name: Reassemble PC ISO
-        run: |
-          cat artifacts/pc/darkOS-1.0-pc.iso.part-* > artifacts/darkOS-1.0-pc.iso
-          cp artifacts/pc/darkOS-1.0-pc.iso.sha256 artifacts/
-          xz -2 -T0 artifacts/darkOS-1.0-pc.iso
-          sha256sum artifacts/darkOS-1.0-pc.iso.xz > artifacts/darkOS-1.0-pc.iso.xz.sha256
+          path: artifacts
 
       - name: Prepare release files
         run: |
-          cp artifacts/rpi/* artifacts/
-          cp artifacts/vm/* artifacts/
+          mkdir -p release
+          cp artifacts/darkos-pc/* release/
+          cp artifacts/darkos-rpi/* release/
+          cp artifacts/darkos-vm/* release/
+          ls -lh release/
 
       - name: Get version
         id: version
@@ -177,29 +160,25 @@ jobs:
 
             | Platform | File | Description |
             |:---|:---|:---|
-            | PC (x86_64) | `darkOS-1.0-pc.iso.xz` | Bootable USB — decompress with `xz -d`, flash with `dd` or Etcher |
-            | Raspberry Pi 4 | `darkOS-1.0-rpi.img.xz` | SD card image — decompress, flash with RPi Imager |
-            | VirtualBox | `darkOS-1.0-vm.ova.xz` | Import with File > Import Appliance |
-            | VMware | `darkOS-1.0-vm.vmdk.xz` | Use as existing disk when creating a VM |
+            | PC (x86_64) | `darkOS-1.0-pc.iso.zst` | Bootable USB — decompress with `zstd -d`, flash with `dd` or Etcher |
+            | Raspberry Pi 4 | `darkOS-1.0-rpi.img.zst` | SD card image — decompress, flash with RPi Imager |
+            | VirtualBox | `darkOS-1.0-vm.ova.zst` | Import with File > Import Appliance |
+            | VMware | `darkOS-1.0-vm.vmdk.zst` | Use as existing disk when creating a VM |
 
             ### Install
 
             ```bash
+            # Decompress (all platforms)
+            zstd -d <file>.zst
+
             # PC — flash to USB
-            xz -d darkOS-1.0-pc.iso.xz
             sudo dd if=darkOS-1.0-pc.iso of=/dev/sdX bs=4M status=progress
 
             # Raspberry Pi 4 — flash to SD
-            xz -d darkOS-1.0-rpi.img.xz
             sudo dd if=darkOS-1.0-rpi.img of=/dev/sdX bs=4M status=progress
 
-            # VirtualBox
-            xz -d darkOS-1.0-vm.ova.xz
-            # File > Import Appliance > darkOS-1.0-vm.ova
-
-            # VMware
-            xz -d darkOS-1.0-vm.vmdk.xz
-            # Create New VM > Use existing disk > darkOS-1.0-vm.vmdk
+            # VirtualBox — File > Import Appliance > darkOS-1.0-vm.ova
+            # VMware — Create New VM > Use existing disk > darkOS-1.0-vm.vmdk
             ```
 
             ### Default credentials
@@ -218,13 +197,6 @@ jobs:
             sha256sum -c *.sha256
             ```
           files: |
-            artifacts/darkOS-1.0-pc.iso.xz
-            artifacts/darkOS-1.0-pc.iso.xz.sha256
-            artifacts/darkOS-1.0-rpi.img.xz
-            artifacts/darkOS-1.0-rpi.img.xz.sha256
-            artifacts/darkOS-1.0-vm.ova.xz
-            artifacts/darkOS-1.0-vm.ova.xz.sha256
-            artifacts/darkOS-1.0-vm.vmdk.xz
-            artifacts/darkOS-1.0-vm.vmdk.xz.sha256
+            release/*
           draft: false
           prerelease: false
