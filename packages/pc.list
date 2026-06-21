@@ -3,8 +3,7 @@
 linux-image-amd64
 live-boot
 systemd-sysv
-isolinux
-syslinux-common
+grub-efi-amd64
 
 # KDE Plasma Desktop
 kde-plasma-desktop

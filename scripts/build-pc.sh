@@ -39,6 +39,7 @@ lb config \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
+    --bootloaders grub-efi \
     --debian-installer false \
     --memtest none \
     --apt-recommends false \
@@ -73,45 +74,12 @@ if [[ -d "${DARKOS_ROOT}/overlays" ]]; then
     cp -r "${DARKOS_ROOT}/overlays/"* config/includes.chroot/ 2>/dev/null || true
 fi
 
-# Hook que crea /root/isolinux/ con symlinks a los archivos reales
-# Se ejecuta durante la fase chroot, DESPUÉS de instalar paquetes
-# Los archivos persisten cuando live-build copia el chroot para la fase binary
-cat > config/hooks/0500-isolinux-links.hook.chroot <<'HOOK'
-#!/bin/sh
-mkdir -p /root/isolinux
-# isolinux package puts files here
-[ -f /usr/lib/ISOLINUX/isolinux.bin ] && cp /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/
-# syslinux-common package puts .c32 files here
-for f in vesamenu.c32 ldlinux.c32 libcom32.c32 libutil.c32 menu.c32; do
-    [ -f /usr/lib/syslinux/modules/bios/$f ] && cp /usr/lib/syslinux/modules/bios/$f /root/isolinux/
-done
-ls -la /root/isolinux/ || true
-HOOK
-chmod +x config/hooks/0500-isolinux-links.hook.chroot
-
 # Copiar branding
 mkdir -p config/includes.chroot/usr/share/darkos
 cp -r "${DARKOS_ROOT}/config/darkos-branding/"* config/includes.chroot/usr/share/darkos/ 2>/dev/null || true
 
 echo "Iniciando build... (esto puede tardar 20-40 minutos)"
-
-# Build por fases para poder inyectar isolinux antes de la fase binary
-lb bootstrap 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
-lb chroot 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
-
-# Inyectar isolinux files en el chroot ANTES de la fase binary
-# lb_binary_syslinux busca en chroot/root/isolinux/ pero la fase live
-# desinstala los paquetes, asi que los ponemos aqui desde el host
-echo "Inyectando isolinux files en el chroot..."
-mkdir -p chroot/root/isolinux
-cp /usr/lib/ISOLINUX/isolinux.bin chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/vesamenu.c32 chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/ldlinux.c32 chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/libcom32.c32 chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/libutil.c32 chroot/root/isolinux/
-ls -la chroot/root/isolinux/
-
-lb binary 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
+lb build 2>&1 | tee "${DARKOS_ROOT}/build/pc-build.log"
 
 ISO_FILE=$(find . -maxdepth 1 -name "*.iso" | head -1)
 if [[ -n "$ISO_FILE" ]]; then

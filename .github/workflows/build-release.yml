@@ -23,8 +23,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y live-build debootstrap dosfstools squashfs-tools \
-            xorriso grub-efi-amd64-bin grub-pc-bin mtools debian-archive-keyring \
-            isolinux syslinux-common zstd
+            xorriso grub-efi-amd64-bin mtools debian-archive-keyring zstd
 
       - name: Build PC ISO
         run: sudo ./scripts/build-pc.sh
