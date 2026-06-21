@@ -92,11 +92,13 @@ jobs:
 
       - name: Compress VM images
         run: |
+          sudo ls -la build/
           cd build
-          xz -9 -T0 darkOS-1.0-vm.ova
-          xz -9 -T0 darkOS-1.0-vm.vmdk
-          sha256sum darkOS-1.0-vm.ova.xz > darkOS-1.0-vm.ova.xz.sha256
-          sha256sum darkOS-1.0-vm.vmdk.xz > darkOS-1.0-vm.vmdk.xz.sha256
+          sudo xz -9 -T0 darkOS-1.0-vm.ova
+          sudo xz -9 -T0 darkOS-1.0-vm.vmdk
+          sudo sha256sum darkOS-1.0-vm.ova.xz > darkOS-1.0-vm.ova.xz.sha256
+          sudo sha256sum darkOS-1.0-vm.vmdk.xz > darkOS-1.0-vm.vmdk.xz.sha256
+          sudo chmod 644 *.xz *.sha256
 
       - name: Upload VM artifacts
         uses: actions/upload-artifact@v4
