@@ -49,7 +49,9 @@ lb config \
     --mirror-binary-security "none" \
     --archive-areas "main contrib non-free non-free-firmware" \
     --keyring-packages "debian-archive-keyring" \
-    --security false
+    --security false \
+    --linux-packages "linux-image linux-headers" \
+    --linux-flavours "amd64"
 
 # Add Debian security repo manually with correct format
 mkdir -p config/archives
