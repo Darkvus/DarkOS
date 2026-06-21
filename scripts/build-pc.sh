@@ -38,14 +38,12 @@ lb config \
     --distribution "$DISTRO" \
     --architectures "$ARCH" \
     --binary-images iso-hybrid \
-    --bootloader grub-efi \
     --debian-installer none \
     --memtest none \
     --iso-application "darkOS" \
     --iso-publisher "darkvus" \
     --iso-volume "darkOS 1.0" \
-    --apt-recommends false \
-    --security true
+    --apt-recommends false
 
 # Copiar lista de paquetes
 cp "${DARKOS_ROOT}/packages/pc.list" config/package-lists/darkos.list.chroot

@@ -43,10 +43,10 @@ qemu-img create -f raw "$RAW_IMG" "$DISK_SIZE"
 
 # Particionar: 512MB EFI + 1GB boot + resto root
 parted -s "$RAW_IMG" mklabel gpt
-parted -s "$RAW_IMG" mkpart ESP fat32 1MiB 513MiB
+parted -s "$RAW_IMG" mkpart efi fat32 1MiB 513MiB
 parted -s "$RAW_IMG" set 1 esp on
-parted -s "$RAW_IMG" mkpart primary ext4 513MiB 1537MiB
-parted -s "$RAW_IMG" mkpart primary ext4 1537MiB 100%
+parted -s "$RAW_IMG" mkpart boot ext4 513MiB 1537MiB
+parted -s "$RAW_IMG" mkpart root ext4 1537MiB 100%
 
 LOOP=$(losetup --find --show --partscan "$RAW_IMG")
 EFI_PART="${LOOP}p1"
