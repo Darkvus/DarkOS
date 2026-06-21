@@ -73,13 +73,21 @@ if [[ -d "${DARKOS_ROOT}/overlays" ]]; then
     cp -r "${DARKOS_ROOT}/overlays/"* config/includes.chroot/ 2>/dev/null || true
 fi
 
-# Copiar isolinux files dentro del chroot donde live-build los busca
-mkdir -p config/includes.chroot/root/isolinux
-cp /usr/lib/ISOLINUX/isolinux.bin config/includes.chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/vesamenu.c32 config/includes.chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/ldlinux.c32 config/includes.chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/libcom32.c32 config/includes.chroot/root/isolinux/
-cp /usr/lib/syslinux/modules/bios/libutil.c32 config/includes.chroot/root/isolinux/
+# Hook que copia isolinux files dentro del chroot justo antes de que live-build los necesite
+cat > config/hooks/normal/0500-isolinux.hook.chroot <<'HOOK'
+#!/bin/sh
+mkdir -p /root/isolinux
+if [ -f /usr/lib/ISOLINUX/isolinux.bin ]; then
+    cp /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/
+fi
+if [ -d /usr/lib/syslinux/modules/bios ]; then
+    cp /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/ 2>/dev/null || true
+    cp /usr/lib/syslinux/modules/bios/ldlinux.c32 /root/isolinux/ 2>/dev/null || true
+    cp /usr/lib/syslinux/modules/bios/libcom32.c32 /root/isolinux/ 2>/dev/null || true
+    cp /usr/lib/syslinux/modules/bios/libutil.c32 /root/isolinux/ 2>/dev/null || true
+fi
+HOOK
+chmod +x config/hooks/normal/0500-isolinux.hook.chroot
 
 # Copiar branding
 mkdir -p config/includes.chroot/usr/share/darkos
