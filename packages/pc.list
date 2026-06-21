@@ -13,7 +13,6 @@ kde-spectacle
 dolphin
 konsole
 ark
-kvantum
 qt5-style-kvantum
 
 # Desarrollo
@@ -34,7 +33,7 @@ openssh-server
 firefox-esr
 file-roller
 gparted
-networkmanager
+network-manager
 bluez
 pulseaudio
 pavucontrol
