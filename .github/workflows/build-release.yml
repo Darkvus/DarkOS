@@ -33,7 +33,7 @@ jobs:
         run: |
           cd build
           sudo zstd -T0 --fast darkOS-1.0-pc.iso -o darkOS-1.0-pc.iso.zst
-          sha256sum darkOS-1.0-pc.iso.zst > darkOS-1.0-pc.iso.zst.sha256
+          sudo sh -c 'sha256sum darkOS-1.0-pc.iso.zst > darkOS-1.0-pc.iso.zst.sha256'
           sudo chmod 644 *.zst *.sha256
 
       - name: Upload PC artifacts
@@ -65,7 +65,7 @@ jobs:
         run: |
           cd build
           sudo zstd -T0 --fast darkOS-1.0-rpi.img -o darkOS-1.0-rpi.img.zst
-          sha256sum darkOS-1.0-rpi.img.zst > darkOS-1.0-rpi.img.zst.sha256
+          sudo sh -c 'sha256sum darkOS-1.0-rpi.img.zst > darkOS-1.0-rpi.img.zst.sha256'
           sudo chmod 644 *.zst *.sha256
 
       - name: Upload RPi artifacts
@@ -98,8 +98,8 @@ jobs:
           cd build
           sudo zstd -T0 --fast darkOS-1.0-vm.ova -o darkOS-1.0-vm.ova.zst
           sudo zstd -T0 --fast darkOS-1.0-vm.vmdk -o darkOS-1.0-vm.vmdk.zst
-          sha256sum darkOS-1.0-vm.ova.zst > darkOS-1.0-vm.ova.zst.sha256
-          sha256sum darkOS-1.0-vm.vmdk.zst > darkOS-1.0-vm.vmdk.zst.sha256
+          sudo sh -c 'sha256sum darkOS-1.0-vm.ova.zst > darkOS-1.0-vm.ova.zst.sha256'
+          sudo sh -c 'sha256sum darkOS-1.0-vm.vmdk.zst > darkOS-1.0-vm.vmdk.zst.sha256'
           sudo chmod 644 *.zst *.sha256
 
       - name: Upload VM artifacts

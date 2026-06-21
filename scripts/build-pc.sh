@@ -73,21 +73,13 @@ if [[ -d "${DARKOS_ROOT}/overlays" ]]; then
     cp -r "${DARKOS_ROOT}/overlays/"* config/includes.chroot/ 2>/dev/null || true
 fi
 
-# Hook que copia isolinux files dentro del chroot justo antes de que live-build los necesite
-cat > config/hooks/normal/0500-isolinux.hook.chroot <<'HOOK'
-#!/bin/sh
-mkdir -p /root/isolinux
-if [ -f /usr/lib/ISOLINUX/isolinux.bin ]; then
-    cp /usr/lib/ISOLINUX/isolinux.bin /root/isolinux/
+# Parchear live-build para que busque isolinux en la ruta correcta del sistema
+# Ubuntu's live-build busca en /root/isolinux/ pero los paquetes los ponen en /usr/lib/
+LB_SYSLINUX=$(which lb_binary_syslinux 2>/dev/null || find /usr/lib/live -name "*syslinux*" 2>/dev/null | head -1)
+if [ -n "$LB_SYSLINUX" ] && [ -f "$LB_SYSLINUX" ]; then
+    sed -i 's|/root/isolinux/isolinux.bin|/usr/lib/ISOLINUX/isolinux.bin|g' "$LB_SYSLINUX"
+    sed -i 's|/root/isolinux/vesamenu.c32|/usr/lib/syslinux/modules/bios/vesamenu.c32|g' "$LB_SYSLINUX"
 fi
-if [ -d /usr/lib/syslinux/modules/bios ]; then
-    cp /usr/lib/syslinux/modules/bios/vesamenu.c32 /root/isolinux/ 2>/dev/null || true
-    cp /usr/lib/syslinux/modules/bios/ldlinux.c32 /root/isolinux/ 2>/dev/null || true
-    cp /usr/lib/syslinux/modules/bios/libcom32.c32 /root/isolinux/ 2>/dev/null || true
-    cp /usr/lib/syslinux/modules/bios/libutil.c32 /root/isolinux/ 2>/dev/null || true
-fi
-HOOK
-chmod +x config/hooks/normal/0500-isolinux.hook.chroot
 
 # Copiar branding
 mkdir -p config/includes.chroot/usr/share/darkos
