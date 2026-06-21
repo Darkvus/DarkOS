@@ -74,9 +74,44 @@ jobs:
             build/darkOS-1.0-rpi.img.xz.sha256
           retention-days: 1
 
+  build-vm:
+    name: Build VM Images (VirtualBox + VMware)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debootstrap qemu-utils parted dosfstools \
+            e2fsprogs grub-efi-amd64-bin grub-efi-amd64
+
+      - name: Build VM images
+        run: sudo ./scripts/build-vm.sh
+
+      - name: Compress VM images
+        run: |
+          cd build
+          xz -9 -T0 darkOS-1.0-vm.ova
+          xz -9 -T0 darkOS-1.0-vm.vmdk
+          sha256sum darkOS-1.0-vm.ova.xz > darkOS-1.0-vm.ova.xz.sha256
+          sha256sum darkOS-1.0-vm.vmdk.xz > darkOS-1.0-vm.vmdk.xz.sha256
+
+      - name: Upload VM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: darkos-vm
+          path: |
+            build/darkOS-1.0-vm.ova.xz
+            build/darkOS-1.0-vm.ova.xz.sha256
+            build/darkOS-1.0-vm.vmdk.xz
+            build/darkOS-1.0-vm.vmdk.xz.sha256
+          retention-days: 1
+
   release:
     name: Create GitHub Release
-    needs: [build-pc, build-rpi]
+    needs: [build-pc, build-rpi, build-vm]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -95,6 +130,12 @@ jobs:
           name: darkos-rpi
           path: artifacts/rpi
 
+      - name: Download VM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: darkos-vm
+          path: artifacts/vm
+
       - name: Reassemble PC ISO
         run: |
           cat artifacts/pc/darkOS-1.0-pc.iso.part-* > artifacts/darkOS-1.0-pc.iso
@@ -102,9 +143,10 @@ jobs:
           xz -9 -T0 artifacts/darkOS-1.0-pc.iso
           sha256sum artifacts/darkOS-1.0-pc.iso.xz > artifacts/darkOS-1.0-pc.iso.xz.sha256
 
-      - name: Prepare RPi files
+      - name: Prepare release files
         run: |
           cp artifacts/rpi/* artifacts/
+          cp artifacts/vm/* artifacts/
 
       - name: Get version
         id: version
@@ -131,19 +173,29 @@ jobs:
 
             | Platform | File | Description |
             |:---|:---|:---|
-            | PC (x86_64) | `darkOS-1.0-pc.iso.xz` | Bootable USB image — decompress with `xz -d`, flash with `dd` or Etcher |
-            | Raspberry Pi 4 | `darkOS-1.0-rpi.img.xz` | SD card image — decompress with `xz -d`, flash with RPi Imager |
+            | PC (x86_64) | `darkOS-1.0-pc.iso.xz` | Bootable USB — decompress with `xz -d`, flash with `dd` or Etcher |
+            | Raspberry Pi 4 | `darkOS-1.0-rpi.img.xz` | SD card image — decompress, flash with RPi Imager |
+            | VirtualBox | `darkOS-1.0-vm.ova.xz` | Import with File > Import Appliance |
+            | VMware | `darkOS-1.0-vm.vmdk.xz` | Use as existing disk when creating a VM |
 
-            ### Flash instructions
+            ### Install
 
             ```bash
-            # PC
+            # PC — flash to USB
             xz -d darkOS-1.0-pc.iso.xz
             sudo dd if=darkOS-1.0-pc.iso of=/dev/sdX bs=4M status=progress
 
-            # Raspberry Pi 4
+            # Raspberry Pi 4 — flash to SD
             xz -d darkOS-1.0-rpi.img.xz
             sudo dd if=darkOS-1.0-rpi.img of=/dev/sdX bs=4M status=progress
+
+            # VirtualBox
+            xz -d darkOS-1.0-vm.ova.xz
+            # File > Import Appliance > darkOS-1.0-vm.ova
+
+            # VMware
+            xz -d darkOS-1.0-vm.vmdk.xz
+            # Create New VM > Use existing disk > darkOS-1.0-vm.vmdk
             ```
 
             ### Default credentials
@@ -155,16 +207,20 @@ jobs:
             - Ollama with auto-detected AI model
             - Python 3, VSCode, Chrome, Node.js, Git
             - SSH enabled by default
+            - VM guest additions (VirtualBox + VMware Tools)
 
             ### Verify downloads
             ```bash
-            sha256sum -c darkOS-1.0-pc.iso.xz.sha256
-            sha256sum -c darkOS-1.0-rpi.img.xz.sha256
+            sha256sum -c *.sha256
             ```
           files: |
             artifacts/darkOS-1.0-pc.iso.xz
             artifacts/darkOS-1.0-pc.iso.xz.sha256
             artifacts/darkOS-1.0-rpi.img.xz
             artifacts/darkOS-1.0-rpi.img.xz.sha256
+            artifacts/darkOS-1.0-vm.ova.xz
+            artifacts/darkOS-1.0-vm.ova.xz.sha256
+            artifacts/darkOS-1.0-vm.vmdk.xz
+            artifacts/darkOS-1.0-vm.vmdk.xz.sha256
           draft: false
           prerelease: false
