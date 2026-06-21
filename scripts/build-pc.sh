@@ -39,7 +39,7 @@ lb config \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
-    --debian-installer none \
+    --debian-installer false \
     --memtest none \
     --apt-recommends false \
     --mirror-bootstrap "http://deb.debian.org/debian" \
