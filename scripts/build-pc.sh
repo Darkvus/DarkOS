@@ -94,7 +94,24 @@ mkdir -p config/includes.chroot/usr/share/darkos
 cp -r "${DARKOS_ROOT}/config/darkos-branding/"* config/includes.chroot/usr/share/darkos/ 2>/dev/null || true
 
 echo "Iniciando build... (esto puede tardar 20-40 minutos)"
-lb build 2>&1 | tee "${DARKOS_ROOT}/build/pc-build.log"
+
+# Build por fases para poder inyectar isolinux antes de la fase binary
+lb bootstrap 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
+lb chroot 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
+
+# Inyectar isolinux files en el chroot ANTES de la fase binary
+# lb_binary_syslinux busca en chroot/root/isolinux/ pero la fase live
+# desinstala los paquetes, asi que los ponemos aqui desde el host
+echo "Inyectando isolinux files en el chroot..."
+mkdir -p chroot/root/isolinux
+cp /usr/lib/ISOLINUX/isolinux.bin chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/vesamenu.c32 chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/ldlinux.c32 chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/libcom32.c32 chroot/root/isolinux/
+cp /usr/lib/syslinux/modules/bios/libutil.c32 chroot/root/isolinux/
+ls -la chroot/root/isolinux/
+
+lb binary 2>&1 | tee -a "${DARKOS_ROOT}/build/pc-build.log"
 
 ISO_FILE=$(find . -maxdepth 1 -name "*.iso" | head -1)
 if [[ -n "$ISO_FILE" ]]; then
