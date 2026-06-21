@@ -1,0 +1,13 @@
+[Unit]
+Description=darkOS First Boot Configuration
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/darkos/.first-boot-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/darkos-first-boot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

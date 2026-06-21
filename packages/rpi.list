@@ -1,0 +1,26 @@
+# darkOS — Paquetes RPi (ARM64)
+# Desktop (se instala condicionalmente según RAM)
+# KDE se instala solo si RAM >= 4GB
+
+# Siempre instalados
+python3
+python3-pip
+python3-venv
+ipython3
+git
+curl
+wget
+htop
+neofetch
+tmux
+build-essential
+openssh-server
+networkmanager
+bluez
+pulseaudio
+
+# Fallback ligero (para RPi con <=2GB)
+openbox
+tint2
+pcmanfm
+lxterminal

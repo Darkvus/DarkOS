@@ -1,0 +1,10 @@
+[PlasmaViews][Panel 2]
+floating=0
+panelLengthMode=2
+thickness=28
+
+[PlasmaViews][Panel 3]
+floating=1
+panelLengthMode=1
+alignment=center
+thickness=56

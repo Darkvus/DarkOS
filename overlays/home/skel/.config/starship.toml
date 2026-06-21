@@ -1,0 +1,51 @@
+format = """
+[░▒▓](#1a1b26)\
+$os\
+$username\
+[](bg:#7aa2f7 fg:#1a1b26)\
+$directory\
+[](fg:#7aa2f7 bg:#394260)\
+$git_branch\
+$git_status\
+[](fg:#394260 bg:#1d2230)\
+$python\
+$nodejs\
+[](fg:#1d2230)\
+$character"""
+
+[os]
+disabled = false
+style = "bg:#1a1b26 fg:#7aa2f7"
+
+[os.symbols]
+Linux = "󰌽 "
+
+[username]
+show_always = true
+style_user = "bg:#1a1b26 fg:#c0caf5"
+format = '[$user ]($style)'
+
+[directory]
+style = "bg:#7aa2f7 fg:#1a1b26"
+format = "[ $path ]($style)"
+truncation_length = 3
+
+[git_branch]
+style = "bg:#394260 fg:#c0caf5"
+format = '[ $symbol$branch ]($style)'
+
+[git_status]
+style = "bg:#394260 fg:#c0caf5"
+format = '[$all_status$ahead_behind ]($style)'
+
+[python]
+style = "bg:#1d2230 fg:#c0caf5"
+format = '[ $symbol$version ]($style)'
+
+[nodejs]
+style = "bg:#1d2230 fg:#c0caf5"
+format = '[ $symbol$version ]($style)'
+
+[character]
+success_symbol = "[❯](bold #7aa2f7)"
+error_symbol = "[❯](bold #f7768e)"

@@ -1,0 +1,13 @@
+[Unit]
+Description=darkOS — Download recommended AI model
+After=ollama.service
+Wants=ollama.service
+ConditionPathExists=!/var/lib/darkos/.model-pulled
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/darkos-pull-model
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

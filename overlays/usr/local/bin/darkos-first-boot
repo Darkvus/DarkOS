@@ -1,0 +1,49 @@
+#!/bin/bash
+set -euo pipefail
+# darkOS — Primer boot: adapta el entorno según hardware detectado
+
+RAM_MB=$(free -m | awk '/^Mem:/{print $2}')
+MARKER="/var/lib/darkos/.first-boot-done"
+
+if [[ -f "$MARKER" ]]; then
+    exit 0
+fi
+
+mkdir -p /var/lib/darkos
+echo "[darkOS] Primer boot — RAM detectada: ${RAM_MB}MB"
+
+# Copiar skel al usuario darkvus si existe
+if id darkvus &>/dev/null; then
+    cp -rn /etc/skel/.config /home/darkvus/ 2>/dev/null || true
+    cp -rn /etc/skel/.local /home/darkvus/ 2>/dev/null || true
+    cp -n /etc/skel/.bashrc /home/darkvus/.bashrc 2>/dev/null || true
+    chown -R darkvus:darkvus /home/darkvus
+fi
+
+if [[ $RAM_MB -ge 3500 ]]; then
+    echo "[darkOS] RAM suficiente, instalando KDE Plasma..."
+    apt-get update -qq
+    apt-get install -y --no-install-recommends \
+        kde-plasma-desktop sddm konsole dolphin kvantum qt5-style-kvantum \
+        breeze-icon-theme plasma-nm plasma-pa kde-spectacle ark
+    systemctl set-default graphical.target
+    systemctl enable sddm
+elif [[ $RAM_MB -ge 1500 ]]; then
+    echo "[darkOS] RAM limitada, instalando Openbox..."
+    apt-get update -qq
+    apt-get install -y --no-install-recommends \
+        openbox tint2 pcmanfm lxterminal nitrogen
+    systemctl set-default graphical.target
+    cat > /home/darkvus/.xinitrc <<'EOF'
+tint2 &
+nitrogen --restore &
+exec openbox-session
+EOF
+    chown darkvus:darkvus /home/darkvus/.xinitrc 2>/dev/null || true
+else
+    echo "[darkOS] RAM muy limitada, modo terminal."
+    systemctl set-default multi-user.target
+fi
+
+touch "$MARKER"
+echo "[darkOS] Primer boot completado."

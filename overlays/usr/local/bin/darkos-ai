@@ -1,0 +1,74 @@
+#!/bin/bash
+# darkOS AI — Wrapper inteligente para Ollama
+
+RAM_MB=$(free -m | awk '/^Mem:/{print $2}')
+OLLAMA_LOCAL="http://localhost:11434"
+OLLAMA_REMOTE="${DARKOS_AI_REMOTE:-}"
+
+check_ollama() {
+    curl -sf "$1/api/tags" &>/dev/null
+}
+
+get_models() {
+    curl -sf "$1/api/tags" 2>/dev/null | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for m in data.get('models', []):
+    size = m.get('size', 0) // 1048576
+    print(f'  - {m[\"name\"]} ({size}MB)')
+" 2>/dev/null
+}
+
+echo "╔══════════════════════════════════════╗"
+echo "║         darkOS AI Assistant          ║"
+echo "╚══════════════════════════════════════╝"
+echo ""
+echo "RAM disponible: ${RAM_MB}MB"
+
+if check_ollama "$OLLAMA_LOCAL"; then
+    echo "Estado: Ollama local activo ✓"
+    echo "Modelos disponibles:"
+    get_models "$OLLAMA_LOCAL"
+    echo ""
+
+    if [[ $# -gt 0 ]]; then
+        MODEL="$1"
+    elif [[ $RAM_MB -ge 8000 ]]; then
+        MODEL="llama3.2:3b"
+    elif [[ $RAM_MB -ge 3500 ]]; then
+        MODEL="qwen2:0.5b"
+    else
+        MODEL="tinyllama"
+    fi
+
+    echo "Iniciando chat con ${MODEL}..."
+    echo "(Ctrl+D para salir)"
+    echo ""
+    ollama run "$MODEL"
+
+elif [[ -n "$OLLAMA_REMOTE" ]] && check_ollama "$OLLAMA_REMOTE"; then
+    echo "Estado: Conectado a Ollama remoto (${OLLAMA_REMOTE}) ✓"
+    echo "Modelos disponibles:"
+    get_models "$OLLAMA_REMOTE"
+    echo ""
+    echo "Usa: OLLAMA_HOST=${OLLAMA_REMOTE} ollama run <modelo>"
+
+else
+    echo "Estado: Sin servidor Ollama disponible"
+    echo ""
+    echo "Opciones:"
+    echo "  1. Iniciar Ollama local:  sudo systemctl start ollama"
+    echo "  2. Descargar un modelo:   ollama pull tinyllama"
+    echo "  3. Conectar a remoto:     export DARKOS_AI_REMOTE=http://<ip>:11434"
+    echo ""
+
+    if [[ $RAM_MB -ge 8000 ]]; then
+        echo "Recomendado para tu RAM: ollama pull llama3.2:3b"
+    elif [[ $RAM_MB -ge 3500 ]]; then
+        echo "Recomendado para tu RAM: ollama pull qwen2:0.5b"
+    elif [[ $RAM_MB -ge 1500 ]]; then
+        echo "Recomendado para tu RAM: ollama pull tinyllama"
+    else
+        echo "RAM muy limitada. Usa Ollama remoto desde otro PC."
+    fi
+fi

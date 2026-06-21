@@ -1,0 +1,8 @@
+PRETTY_NAME="darkOS 1.0"
+NAME="darkOS"
+VERSION_ID="1.0"
+VERSION="1.0 (Bookworm)"
+ID=darkos
+ID_LIKE=debian
+HOME_URL="https://github.com/darkvus/darkOS"
+BUG_REPORT_URL="https://github.com/darkvus/darkOS/issues"

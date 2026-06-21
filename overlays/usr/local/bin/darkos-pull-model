@@ -1,0 +1,25 @@
+#!/bin/bash
+# darkOS — Descarga automática de modelo Ollama según RAM
+RAM_MB=$(free -m | awk '/^Mem:/{print $2}')
+MARKER="/var/lib/darkos/.model-pulled"
+
+if [[ -f "$MARKER" ]]; then
+    exit 0
+fi
+
+sleep 10
+
+if ! curl -sf http://localhost:11434/api/tags &>/dev/null; then
+    exit 0
+fi
+
+if [[ $RAM_MB -ge 8000 ]]; then
+    ollama pull llama3.2:3b
+elif [[ $RAM_MB -ge 3500 ]]; then
+    ollama pull qwen2:0.5b
+elif [[ $RAM_MB -ge 1500 ]]; then
+    ollama pull tinyllama
+fi
+
+mkdir -p /var/lib/darkos
+touch "$MARKER"

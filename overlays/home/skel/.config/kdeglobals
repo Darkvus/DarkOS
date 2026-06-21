@@ -1,0 +1,12 @@
+[General]
+ColorScheme=BreezeDark
+Name=Breeze Dark
+widgetStyle=kvantum-dark
+
+[Icons]
+Theme=breeze-dark
+
+[KDE]
+LookAndFeelPackage=org.kde.breezedark.desktop
+SingleClick=false
+AnimationDurationFactor=0.5

@@ -1,0 +1,35 @@
+# darkOS — Paquetes PC (x86_64)
+# KDE Plasma Desktop
+kde-plasma-desktop
+sddm
+plasma-nm
+plasma-pa
+kde-spectacle
+dolphin
+konsole
+ark
+kvantum
+qt5-style-kvantum
+
+# Desarrollo
+python3
+python3-pip
+python3-venv
+ipython3
+git
+curl
+wget
+htop
+neofetch
+tmux
+build-essential
+openssh-server
+
+# Utilidades
+firefox-esr
+file-roller
+gparted
+networkmanager
+bluez
+pulseaudio
+pavucontrol
