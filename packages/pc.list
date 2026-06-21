@@ -1,4 +1,9 @@
 # darkOS — Paquetes PC (x86_64)
+# Kernel y sistema base
+linux-image-amd64
+live-boot
+systemd-sysv
+
 # KDE Plasma Desktop
 kde-plasma-desktop
 sddm
