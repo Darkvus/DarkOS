@@ -35,6 +35,7 @@ cd "$BUILD_DIR"
 
 # Configurar live-build
 lb config \
+    --mode debian \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
@@ -43,7 +44,10 @@ lb config \
     --apt-recommends false \
     --mirror-bootstrap "http://deb.debian.org/debian" \
     --mirror-chroot "http://deb.debian.org/debian" \
+    --mirror-chroot-security "http://security.debian.org/debian-security" \
     --mirror-binary "http://deb.debian.org/debian" \
+    --mirror-binary-security "http://security.debian.org/debian-security" \
+    --archive-areas "main contrib non-free non-free-firmware" \
     --keyring-packages "debian-archive-keyring"
 
 # Copiar lista de paquetes
