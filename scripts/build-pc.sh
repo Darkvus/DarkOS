@@ -39,7 +39,7 @@ lb config \
     --distribution "$DISTRO" \
     --architecture "$ARCH" \
     --binary-image iso-hybrid \
-    --bootloaders grub-efi \
+    --bootloader grub-efi \
     --debian-installer false \
     --memtest none \
     --apt-recommends false \

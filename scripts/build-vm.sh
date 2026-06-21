@@ -13,7 +13,7 @@ VMDK_IMG="${DARKOS_ROOT}/build/darkOS-1.0-vm.vmdk"
 OVA_DIR="${BUILD_DIR}/ova"
 ARCH="amd64"
 DISTRO="bookworm"
-DISK_SIZE="20G"
+DISK_SIZE="8G"
 VM_NAME="darkOS-1.0"
 
 echo "========================================="
@@ -166,6 +166,9 @@ qemu-img convert -f raw -O vmdk -o subformat=streamOptimized "$RAW_IMG" "$VMDK_I
 # Convertir a VDI y crear OVA (VirtualBox)
 VDI_IMG="${OVA_DIR}/${VM_NAME}-disk001.vdi"
 qemu-img convert -f raw -O vdi "$RAW_IMG" "$VDI_IMG"
+
+# Eliminar raw para liberar espacio
+rm -f "$RAW_IMG"
 
 echo "[8/8] Creando OVA..."
 

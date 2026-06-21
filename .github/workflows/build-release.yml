@@ -83,6 +83,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          sudo apt-get autoremove -y
+          df -h /
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
